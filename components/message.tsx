@@ -272,7 +272,6 @@ export const Message = ({
       <MessageToolbar
         isPending={false}
         handleThread={() => onOpenThread?.(id)}
-        handleReaction={() => {}}
         hideThreadButton={hideThreadButton}
         onCreateTask={handleCreateTask}
         hasTask={!!task}
