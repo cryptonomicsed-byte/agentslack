@@ -115,7 +115,7 @@ describe('AgentDaemon exports', () => {
     expect(daemon.isSessionReady('agent1', 'task1')).toBe(false)
   })
 
-  it('getSession returns undefined for unknown session', async () => {
+  it('getSession returns false for unknown session', async () => {
     vi.resetModules()
 
     vi.doMock('@/lib/agents/directory', () => ({
@@ -124,7 +124,7 @@ describe('AgentDaemon exports', () => {
 
     const { getAgentDaemon } = await import('@/server/agent-daemon')
     const daemon = getAgentDaemon()
-    expect(daemon.getSession('agent1', 'task1')).toBeUndefined()
+    expect(daemon.getSession('agent1', 'task1')).toBe(false)
   })
 
   it('stopAgent does nothing for unknown agent', async () => {

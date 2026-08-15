@@ -12,15 +12,27 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { PROVIDERS, modelsForProvider } from '@/lib/agents/model-catalog'
 
 export function CreateAgentModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
+  const [provider, setProvider] = useState('anthropic')
   const [model, setModel] = useState('anthropic/claude-sonnet-4-5')
+  const [apiBaseUrl, setApiBaseUrl] = useState('')
+  const [apiKey, setApiKey] = useState('')
   const [soulMd, setSoulMd] = useState('')
   const [isCreating, setIsCreating] = useState(false)
 
   const isValidName = /^[a-z][a-z0-9_-]*$/.test(name)
+  const currentProvider = PROVIDERS.find((p) => p.id === provider) ?? PROVIDERS[0]
+  const modelOptions = modelsForProvider(provider)
+
+  const handleProviderChange = (next: string) => {
+    setProvider(next)
+    const first = modelsForProvider(next)[0]
+    if (first) setModel(first.value)
+  }
 
   const handleCreate = async () => {
     if (!name.trim() || !soulMd.trim()) return
@@ -28,10 +40,23 @@ export function CreateAgentModal({ onClose }: { onClose: () => void }) {
 
     setIsCreating(true)
     try {
+      const providerConfig =
+        apiBaseUrl.trim() || apiKey.trim()
+          ? { baseUrl: apiBaseUrl.trim() || undefined, apiKey: apiKey.trim() || undefined }
+          : undefined
+
       const response = await fetch('/api/agents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, role, model, soul_md: soulMd }),
+        body: JSON.stringify({
+          name,
+          role,
+          model,
+          soul_md: soulMd,
+          runtime_type: 'claude-code',
+          provider,
+          provider_config: providerConfig,
+        }),
       })
 
       if (response.ok) {
@@ -58,7 +83,8 @@ export function CreateAgentModal({ onClose }: { onClose: () => void }) {
             <DialogTitle>Create Agent</DialogTitle>
           </div>
           <DialogDescription>
-            Create a new AI agent powered by Claude. Use a username-style name.
+            Create a new AI agent. Non-Anthropic models require a proxy base URL (e.g. a
+            claude-code-router or OpenAI-compatible endpoint).
           </DialogDescription>
         </DialogHeader>
 
@@ -89,19 +115,62 @@ export function CreateAgentModal({ onClose }: { onClose: () => void }) {
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Model</label>
-            <select
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="anthropic/claude-sonnet-4-5">Claude Sonnet 4.5</option>
-              <option value="anthropic/claude-sonnet-4-6">Claude Sonnet 4.6</option>
-              <option value="anthropic/claude-opus-4-6">Claude Opus 4.6</option>
-              <option value="anthropic/claude-haiku-4-5">Claude Haiku 4.5</option>
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Provider</label>
+              <select
+                value={provider}
+                onChange={(e) => handleProviderChange(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {PROVIDERS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Model</label>
+              <select
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {modelOptions.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
+
+          {provider !== 'anthropic' && (
+            <div className="space-y-2 rounded-md border border-dashed p-3">
+              <p className="text-xs font-medium text-muted-foreground">
+                Provider endpoint (optional — required for non-Anthropic models)
+              </p>
+              <div className="grid grid-cols-1 gap-2">
+                <Input
+                  placeholder="Base URL (e.g. https://api.deepseek.com)"
+                  value={apiBaseUrl}
+                  onChange={(e) => setApiBaseUrl(e.target.value)}
+                />
+                <Input
+                  type="password"
+                  placeholder="API key (optional)"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Current provider: {currentProvider.label}. For Ollama use e.g.{' '}
+                http://host:11434/v1 with an ollama model id.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Personality & Instructions</label>

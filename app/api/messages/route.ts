@@ -415,7 +415,18 @@ async function deliverToAgents(
             }
 
             daemon.startSession(
-              { id: agent.id, openclawId: agent.openclawId, name: agent.name, model: agent.model, soulMd: agent.soulMd, isAdmin: agent.isAdmin, dirPath: worktreePath },
+              {
+                id: agent.id,
+                openclawId: agent.openclawId,
+                name: agent.name,
+                model: agent.model,
+                runtimeType: (agent as any).runtimeType,
+                provider: (agent as any).provider,
+                providerConfig: (agent as any).providerConfig,
+                soulMd: agent.soulMd,
+                isAdmin: agent.isAdmin,
+                dirPath: worktreePath,
+              },
               sessionConfig,
             )
 

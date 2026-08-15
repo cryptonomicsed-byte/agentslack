@@ -33,11 +33,35 @@ export async function PUT(
 
   const data: Record<string, unknown> = {}
   if (body.model) data.model = body.model
+  if (body.runtime_type !== undefined) {
+    if (!['claude-code', 'hermes', 'openclaw', 'generic-llm'].includes(body.runtime_type)) {
+      return NextResponse.json({ error: 'Invalid runtime_type' }, { status: 400 })
+    }
+    data.runtimeType = body.runtime_type
+  }
+  if (body.provider !== undefined) data.provider = body.provider
+  if (body.provider_config !== undefined) {
+    if (typeof body.provider_config !== 'object' || body.provider_config === null || Array.isArray(body.provider_config)) {
+      return NextResponse.json({ error: 'provider_config must be an object' }, { status: 400 })
+    }
+    data.providerConfig = body.provider_config
+  }
 
   const updated = await db.agent.update({
     where: { id: agentId },
     data,
   })
+
+  // Refresh the daemon's cached config so the next (re)start uses the new values.
+  if (body.model || body.provider_config !== undefined || body.runtime_type !== undefined) {
+    const daemon = getAgentDaemon()
+    daemon.updateConfig(agentId, {
+      model: updated.model,
+      runtimeType: (updated.runtimeType as 'claude-code') || undefined,
+      provider: updated.provider || undefined,
+      providerConfig: (updated.providerConfig as Record<string, unknown>) || undefined,
+    })
+  }
 
   return NextResponse.json(updated)
 }

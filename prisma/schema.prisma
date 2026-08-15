@@ -33,17 +33,20 @@ model Workspace {
 }
 
 model Agent {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  workspaceId String   @map("workspace_id") @db.Uuid
-  openclawId  String   @map("openclaw_id")
-  name        String
-  role        String?
-  avatarUrl   String?  @map("avatar_url")
-  model       String   @default("anthropic/claude-sonnet-4-5")
-  soulMd      String?  @map("soul_md")
-  isAdmin     Boolean  @default(false) @map("is_admin")
-  status      String   @default("online")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId    String   @map("workspace_id") @db.Uuid
+  openclawId     String   @map("openclaw_id")
+  name           String
+  role           String?
+  avatarUrl      String?  @map("avatar_url")
+  model          String   @default("anthropic/claude-sonnet-4-5")
+  runtimeType    String   @default("claude-code") @map("runtime_type")
+  provider       String?  @map("provider")
+  providerConfig Json?    @map("provider_config")
+  soulMd         String?  @map("soul_md")
+  isAdmin        Boolean  @default(false) @map("is_admin")
+  status         String   @default("online")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
 
   workspace          Workspace            @relation(fields: [workspaceId], references: [id])
   channelAgents      ChannelAgent[]

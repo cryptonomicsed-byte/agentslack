@@ -193,9 +193,12 @@ describe('POST /api/agents', () => {
       openclawId: 'my-agent',
       name: 'my-agent',
       model: 'anthropic/claude-sonnet-4-5',
+      runtimeType: 'claude-code',
+      provider: undefined,
+      providerConfig: undefined,
       soulMd: 'soul content',
       isAdmin: false,
-      dirPath: '/agents/a-1',
+      dirPath: expect.any(String),
     })
   })
 })

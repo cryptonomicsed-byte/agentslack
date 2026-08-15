@@ -8,6 +8,7 @@ const { mockGetServerSession, mockDb, mockDaemon } = vi.hoisted(() => ({
   },
   mockDaemon: {
     startAgent: vi.fn(),
+    updateConfig: vi.fn(),
     isRunning: vi.fn(),
     isReady: vi.fn(),
   },

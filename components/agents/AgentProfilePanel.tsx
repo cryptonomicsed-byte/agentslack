@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { useSocket } from '@/lib/socket/useSocket'
 import { cn } from '@/lib/utils'
+import { MODEL_OPTIONS } from '@/lib/agents/model-catalog'
 import type { Agent } from '@/types'
 import { AgentProcessControls } from './AgentProcessControls'
 import { AgentInstructionsEditor } from './AgentInstructionsEditor'
@@ -63,15 +64,6 @@ function formatDate(date: string | Date) {
     year: 'numeric',
   })
 }
-
-const MODEL_OPTIONS = [
-  { value: 'anthropic/claude-sonnet-4-6', label: 'Claude Sonnet 4.6' },
-  { value: 'anthropic/claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
-  { value: 'anthropic/claude-opus-4-6', label: 'Claude Opus 4.6' },
-  { value: 'anthropic/claude-opus-4', label: 'Claude Opus 4' },
-  { value: 'anthropic/claude-haiku-4-5', label: 'Claude Haiku 4.5' },
-  { value: 'anthropic/claude-haiku-3-5', label: 'Claude Haiku 3.5' },
-]
 
 function formatModel(model: string) {
   return MODEL_OPTIONS.find((m) => m.value === model)?.label || model
