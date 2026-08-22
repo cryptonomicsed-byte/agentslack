@@ -132,7 +132,7 @@ describe('AgentDaemon runtime dispatch', () => {
     const daemon = getAgentDaemon()
     daemon.startAgent({
       id: 'a2', openclawId: 'oc-2', name: 'Future Runtime', model: 'anthropic/claude-sonnet-4-5',
-      runtimeType: 'hermes' as any, // not implemented yet — must fall back to claude-code
+      runtimeType: 'weird-future-runtime' as any, // not implemented — must fall back to claude-code
       soulMd: null, isAdmin: false, dirPath: tmpDir,
     })
 

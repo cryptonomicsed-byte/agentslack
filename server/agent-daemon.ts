@@ -8,6 +8,9 @@
  */
 import type { AgentRuntime } from './runtimes/interface'
 import { ClaudeCodeRuntime } from './runtimes/claude-code'
+import { HermesRuntime } from './runtimes/hermes'
+import { OpenClawRuntime } from './runtimes/openclaw'
+import { GenericLLMRuntime } from './runtimes/generic-llm'
 import type {
   AgentConfig,
   AgentRuntimeType,
@@ -34,7 +37,15 @@ class AgentDaemon {
   private createRuntime(type: AgentRuntimeType): AgentRuntime {
     let runtime: AgentRuntime
     switch (type) {
-      // P3/P4/P5: HermesRuntime, OpenClawRuntime, GenericLLMRuntime land here.
+      case 'hermes':
+        runtime = new HermesRuntime()
+        break
+      case 'openclaw':
+        runtime = new OpenClawRuntime()
+        break
+      case 'generic-llm':
+        runtime = new GenericLLMRuntime()
+        break
       default:
         runtime = new ClaudeCodeRuntime()
     }

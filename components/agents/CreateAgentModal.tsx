@@ -17,6 +17,7 @@ import { PROVIDERS, modelsForProvider } from '@/lib/agents/model-catalog'
 export function CreateAgentModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
+  const [runtime, setRuntime] = useState('claude-code')
   const [provider, setProvider] = useState('anthropic')
   const [model, setModel] = useState('anthropic/claude-sonnet-4-5')
   const [apiBaseUrl, setApiBaseUrl] = useState('')
@@ -27,6 +28,14 @@ export function CreateAgentModal({ onClose }: { onClose: () => void }) {
   const isValidName = /^[a-z][a-z0-9_-]*$/.test(name)
   const currentProvider = PROVIDERS.find((p) => p.id === provider) ?? PROVIDERS[0]
   const modelOptions = modelsForProvider(provider)
+  const needsEndpoint = runtime !== 'claude-code' || provider !== 'anthropic'
+
+  const RUNTIME_OPTIONS = [
+    { value: 'claude-code', label: 'Claude Code CLI', hint: 'Native Anthropic models or a proxy via base URL' },
+    { value: 'hermes', label: 'Hermes Agent', hint: 'Hermes CLI with isolated memory/skills (needs hermes on host)' },
+    { value: 'openclaw', label: 'OpenClaw Gateway', hint: 'Routes to an OpenClaw agent via its gateway URL' },
+    { value: 'generic-llm', label: 'Generic LLM', hint: 'In-process ReAct loop — any OpenAI-compatible endpoint' },
+  ]
 
   const handleProviderChange = (next: string) => {
     setProvider(next)
@@ -53,7 +62,7 @@ export function CreateAgentModal({ onClose }: { onClose: () => void }) {
           role,
           model,
           soul_md: soulMd,
-          runtime_type: 'claude-code',
+          runtime_type: runtime,
           provider,
           provider_config: providerConfig,
         }),
@@ -115,6 +124,24 @@ export function CreateAgentModal({ onClose }: { onClose: () => void }) {
             />
           </div>
 
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Runtime</label>
+            <select
+              value={runtime}
+              onChange={(e) => setRuntime(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              {RUNTIME_OPTIONS.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-muted-foreground">
+              {RUNTIME_OPTIONS.find((r) => r.value === runtime)?.hint}
+            </p>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Provider</label>
@@ -147,7 +174,7 @@ export function CreateAgentModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          {provider !== 'anthropic' && (
+          {needsEndpoint && (
             <div className="space-y-2 rounded-md border border-dashed p-3">
               <p className="text-xs font-medium text-muted-foreground">
                 Provider endpoint (optional — required for non-Anthropic models)
